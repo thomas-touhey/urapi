@@ -1,0 +1,2 @@
+Copyright (C) 2025 Thomas Touhey <thomas@touhey.fr>
+All rights reserved.

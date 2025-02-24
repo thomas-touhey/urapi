@@ -1,0 +1,36 @@
+default_language_version:
+    python: python3.11
+
+repos:
+    - repo: https://github.com/commitizen-tools/commitizen
+      rev: v2.38.0
+      hooks:
+          - id: commitizen
+            stages: [commit-msg]
+
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v2.3.0
+      hooks:
+          - id: trailing-whitespace
+          - id: check-merge-conflict
+          - id: check-ast
+          - id: mixed-line-ending
+          - id: end-of-file-fixer
+
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.9.7
+      hooks:
+          - id: ruff-format
+          - id: ruff
+
+    - repo: https://github.com/pre-commit/mirrors-mypy
+      rev: v1.5.0
+      hooks:
+          - id: mypy
+            additional_dependencies:
+                - types-toml
+
+    - repo: https://github.com/hadolint/hadolint
+      rev: v2.12.0
+      hooks:
+          - id: hadolint-docker

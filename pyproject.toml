@@ -1,0 +1,87 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "urapi"
+version = "20250224"
+description = "Your API for User Registration"
+license = "Proprietary"
+authors = ["Thomas Touhey <thomas@touhey.fr>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiosmtplib = "^4.0.0"
+asyncpg = "^0.30.0"
+fastapi = "^0.103.1"
+orjson = "^3.10.15"
+pydantic = {extras = ["email"], version = "^2.10.6"}
+pydantic-settings = "^2.8.0"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.4.0"
+
+[tool.poetry.group.deployment.dependencies]
+gunicorn = "^21.2.0"
+uvicorn = "^0.23.2"
+
+[tool.ruff]
+exclude = ["try*.py"]
+fix = true
+line-length = 79
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "ANN",
+    "ASYNC",
+    "B",
+    "COM",
+    "D",
+    "E",
+    "F",
+    "FAST",
+    "G",
+    "I",
+    "Q",
+    "RUF",
+    "S",
+    "UP",
+    "W",
+]
+ignore = [
+    "ANN002", # No type annotations for *args
+    "ANN003", # No type annotations for **kwargs
+    "ANN204", # No return type for special method
+    "ANN401", # We allow typing.Any in certain annoying cases
+    "D105",   # No need for docstrings in magic __methods__
+    "D107",   # No need for docstrings in __init__
+    "S413",   # We use pycryptodome, not pycrypto
+    "S608",   # We build our requests ourselves here.
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["urapi"]
+required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.pytest.ini_options]
+addopts = """
+--cov=urapi --cov-report html --cov-report term --doctest-modules
+--ignore=docs
+"""
+
+[tool.mypy]
+ignore_missing_imports = true
+mypy_path = "."
+warn_unused_ignores = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "@abstractmethod",
+    "@_abstractmethod",
+    "pragma: no cover"
+]

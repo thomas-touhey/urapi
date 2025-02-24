@@ -1,0 +1,61 @@
+name: urapi-dev
+
+services:
+  mailcatcher:
+    restart: always
+    image: dockage/mailcatcher:0.9.0
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+
+  postgres:
+    restart: always
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: urapi
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  init-dev:
+    depends_on:
+      mailcatcher:
+        condition: service_started
+      postgres:
+        condition: service_started
+    build:
+      context: ..
+      dockerfile: docker/dev.Dockerfile
+      target: init-dev
+    volumes:
+      - ..:/opt/urapi/root:ro
+    environment:
+      DATABASE_POSTGRESQL_URL: postgresql://postgres:postgres@postgres:5432/urapi
+      SMTP_URL: smtp://mailcatcher:1025
+
+  asgi:
+    depends_on:
+      init-dev:
+        condition: service_completed_successfully
+    restart: on-failure
+    build:
+      context: ..
+      dockerfile: docker/dev.Dockerfile
+      target: asgi
+    ports:
+      - "8080:80"
+    volumes:
+      - ..:/opt/urapi/root:ro
+    environment:
+      DATABASE_POSTGRESQL_URL: postgresql://postgres:postgres@postgres:5432/urapi
+      SMTP_FROM: "noreply@urapi.example"
+      SMTP_URL: smtp://mailcatcher:1025
