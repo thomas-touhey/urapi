@@ -105,7 +105,25 @@ account **only if your account is validated**.
 Running the tests
 ~~~~~~~~~~~~~~~~~
 
-.. todo:: Write this part!
+In order to run the tests, the steps are the following:
+
+#. In a terminal, run the following command:
+
+   .. code-block:: bash
+
+       docker compose -f docker/docker-compose-test.yaml up
+
+#. Open another terminal on the same host. The rest of the steps will use it.
+#. If ``poetry`` 1.x is not available to you, you must install it.
+   If your environment is externally managed, use your system's package manager
+   to install it; otherwise, run ``pip install poetry``.
+#. If dependencies are not installed, run ``poetry install`` to install all
+   dependencies, including the development ones, which are necessary to run
+   tests.
+#. Run ``make test`` or ``poetry run pytest``.
+
+You should obtain the test and coverage report, along with, if you have run
+the tests using ``make test``, the path to the HTML coverage report.
 
 API concepts and architecture
 -----------------------------

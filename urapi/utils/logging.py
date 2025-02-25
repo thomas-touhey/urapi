@@ -116,6 +116,12 @@ class LoggingContextMiddleware(BaseHTTPMiddleware):
             correlation_id = str(uuid4())
 
         ctx = LoggingContext(correlation_id=correlation_id)
+
+        # The exception handler is called out of the logging context, we
+        # actually want to provide it with the context as well, through
+        # the request state.
+        request.state.logging_context = ctx
+
         token: ContextToken = _logging_context_var.set(ctx)
         try:
             response = await call_next(request)
@@ -197,9 +203,9 @@ class ECSFormatter(Formatter):
         if exc_info and isinstance(exc_info, list | tuple):
             if record.exc_info and record.exc_info[2]:
                 stack_trace = "".join(format_tb(exc_info[2]))
-            elif record.stack_info:
+            elif record.stack_info:  # pragma: no cover
                 stack_trace = str(record.stack_info)
-            else:
+            else:  # pragma: no cover
                 stack_trace = None
 
             data["error"] = {

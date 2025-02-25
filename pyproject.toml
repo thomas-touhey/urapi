@@ -19,7 +19,13 @@ pydantic = {extras = ["email"], version = "^2.10.6"}
 pydantic-settings = "^2.8.0"
 
 [tool.poetry.group.dev.dependencies]
+httpx = "^0.25.0"  # Used by FastAPI's test client.
 pre-commit = "^3.4.0"
+pytest = "^8.3.4"
+pytest-asyncio = "^0.25.3"
+pytest-cov = "^6.0.0"
+pytest-mock = "^3.14.0"
+pytest-postgresql = "^7.0.0"
 
 [tool.poetry.group.deployment.dependencies]
 gunicorn = "^21.2.0"
@@ -65,10 +71,14 @@ combine-as-imports = true
 known-first-party = ["urapi"]
 required-imports = ["from __future__ import annotations"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**.py" = ["D103", "S101", "S106"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
 
 [tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
 addopts = """
 --cov=urapi --cov-report html --cov-report term --doctest-modules
 --ignore=docs

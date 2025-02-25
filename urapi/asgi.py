@@ -9,34 +9,17 @@ from __future__ import annotations
 
 from traceback import format_exception
 
-from fastapi import FastAPI as _FastAPI, Request, Response
+from fastapi import FastAPI as FastAPI, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from starlette.exceptions import HTTPException
-from starlette.types import ASGIApp
 
 from .exceptions import Error
 from .routers.user import router as user_router
 from .schemas.error import ErrorSchema, ValidationErrorSchema
-from .utils.logging import LoggingContextMiddleware, get_logging_context
-
-
-class FastAPI(_FastAPI):
-    """FastAPI application with the logging middleware at top level."""
-
-    def build_middleware_stack(self) -> ASGIApp:
-        """Build the middleware stack.
-
-        This is overridden to have the logging middleware at top of the
-        middleware stack, to also handle exceptions automatically.
-
-        :return: The wrapped ASGI app.
-        """
-        asgi_app = super().build_middleware_stack()
-        return LoggingContextMiddleware(app=asgi_app)
-
+from .utils.logging import LoggingContextMiddleware
 
 app = FastAPI(
     title="urapi",
@@ -54,6 +37,7 @@ app = FastAPI(
     },
     default_response_class=ORJSONResponse,
 )
+app.add_middleware(LoggingContextMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -70,7 +54,7 @@ app.include_router(user_router)
 def handle_exception(request: Request, exc: Exception) -> Response:
     """Handle generic exceptions."""
     status = 500
-    correlation_id = get_logging_context().correlation_id or "(not set)"
+    correlation_id = request.state.logging_context.correlation_id
     if isinstance(exc, Error):
         data = ErrorSchema(
             type=exc.type,
@@ -79,6 +63,14 @@ def handle_exception(request: Request, exc: Exception) -> Response:
             correlation_id=correlation_id,
         )
         status = exc.status
+    elif isinstance(exc, HTTPException):
+        data = ErrorSchema(
+            type="urn:error:generic",
+            title="Generic HTTP error",
+            detail=f"{exc.detail} ({exc.status_code})",
+            correlation_id=correlation_id,
+        )
+        status = exc.status_code
     elif isinstance(exc, RequestValidationError):
         data = ErrorSchema(
             type="urn:error:invalid-request",
@@ -118,5 +110,8 @@ def handle_exception(request: Request, exc: Exception) -> Response:
 
     return request.app.router.default_response_class(
         jsonable_encoder(data, exclude_defaults=True),
+        headers={
+            "X-Correlation-ID": request.state.logging_context.correlation_id,
+        },
         status_code=status,
     )
