@@ -59,6 +59,11 @@ The following sections assume you are running the stack with Docker.
 Registering a user
 ~~~~~~~~~~~~~~~~~~
 
+.. note::
+
+    `A video demonstration is available for that guide.
+    <Video demo_>`_
+
 In order to register a user using the API, the steps are the following:
 
 1. Create the user, by issuing a ``POST http://localhost:8080/v1/users``
@@ -282,3 +287,5 @@ Other attributes may be present depending on the error type.
     https://www.elastic.co/guide/en/ecs/current/index.html
 .. _RFC 9457:
     https://www.rfc-editor.org/rfc/rfc9457.html
+.. _Video demo:
+    https://www.dailymotion.com/video/k1VdrC1IZyREiTCyJk6
